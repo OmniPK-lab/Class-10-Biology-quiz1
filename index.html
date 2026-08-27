@@ -1,16 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CBSE Class 10 Social Science Quiz</title>
+    <title>Class 10 Biology Quiz</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden; }
-        iframe { width: 100%; height: 100%; border: none; }
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        .card { border: 1px solid #ccc; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        button { display: block; width: 100%; margin: 8px 0; padding: 10px; cursor: pointer; }
+        .hidden { display: none; }
     </style>
-    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 <body>
-    <iframe src="https://class-10-social-science-quiz-2-bb9bhj2chwm9axj6cfivvk.streamlit.app/?embed=true"></iframe>
+    <h2>Class 10 Biology Quiz</h2>
+    <div id="quiz-container" class="card">
+        <h4 id="chapter-title"></h4>
+        <p id="question-text"></p>
+        <div id="options-container"></div>
+        <p id="explanation" class="hidden"></p>
+        <button id="next-btn" class="hidden" onclick="nextQuestion()">Next Question</button>
+    </div>
+    <div id="result-container" class="card hidden">
+        <h3>Quiz Finished!</h3>
+        <p id="score-text"></p>
+    </div>
+
+    <script>
+        // Paste your JSON array of questions here
+        const questions = [
+            {
+                chapter: "Life Processes",
+                question: "Large intestine in man mainly carries out:",
+                options: ["(a) absorption of water", "(b) assimilation", "(c) digestion of fats", "(d) digestion of carbohydrates"],
+                answer: 0, // index of option (a)
+                explanation: "Main function is absorbing remaining water and salts."
+            }
+            // Add more questions in this JS format
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+
+        function loadQuestion() {
+            const q = questions[currentIndex];
+            document.getElementById("chapter-title").innerText = q.chapter;
+            document.getElementById("question-text").innerText = q.question;
+            document.getElementById("explanation").classList.add("hidden");
+            document.getElementById("next-btn").classList.add("hidden");
+            
+            const optionsDiv = document.getElementById("options-container");
+            optionsDiv.innerHTML = "";
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement("button");
+                btn.innerText = opt;
+                btn.onclick = () => selectAnswer(idx);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function selectAnswer(selectedIdx) {
+            const q = questions[currentIndex];
+            const expl = document.getElementById("explanation");
+            if (selectedIdx === q.answer) {
+                score++;
+                expl.innerText = "Correct! " + q.explanation;
+            } else {
+                expl.innerText = "Incorrect. " + q.explanation;
+            }
+            expl.classList.remove("hidden");
+            document.getElementById("next-btn").classList.remove("hidden");
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                loadQuestion();
+            } else {
+                document.getElementById("quiz-container").classList.add("hidden");
+                document.getElementById("result-container").classList.remove("hidden");
+                document.getElementById("score-text").innerText = `Your score: ${score}/${questions.length}`;
+            }
+        }
+
+        loadQuestion();
+    </script>
 </body>
 </html>
-
