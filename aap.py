@@ -1,755 +1,494 @@
-import streamlit as st
-import time
-
-# Import auto-refresh component
-try:
-    from streamlit_autorefresh import st_autorefresh
-    HAS_AUTOREFRESH = True
-except ImportError:
-    HAS_AUTOREFRESH = False
-
-st.set_page_config(page_title="CBSE Class 10 Biology  Quiz ", layout="wide")
-####i have kept it here
-
-# Complete hide for menus, footers, badges, and the breakout fullscreen button
-hide_streamlit_style = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBSE Class 10 Biology Master Quiz</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for rendering equations cleanly if needed -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-    /* Hide top header & standard toolbar */
-    #MainMenu {visibility: hidden !important; display: none !important;}
-    header {visibility: hidden !important; display: none !important;}
-    footer {visibility: hidden !important; display: none !important;}
-    [data-testid="stHeader"] {visibility: hidden !important; display: none !important;}
-    [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
-    
-    /* Remove embed breakout fullscreen button */
-    button[title="View fullscreen"] {display: none !important;}
-    [data-testid="StyledFullScreenButton"] {display: none !important;}
-    
-    /* Hide bottom action buttons & viewer badges */
-    [data-testid="stAppViewerOffer"] {display: none !important;}
-    [data-testid="stDecoration"] {display: none !important;}
-    [data-testid="stStatusWidget"] {display: none !important;}
-    div[class*="viewerBadge"] {display: none !important;}
-    div[class*="styles_viewerBadge"] {display: none !important;}
-    div[class*="stAppToolbar"] {display: none !important;}
-    div[class*="stActionButton"] {display: none !important;}
-    div[class*="manageApp"] {display: none !important;}
-    #stDecoration {display: none !important;}
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+        }
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
-"""
-####i have kept it here
+</head>
+<body class="bg-slate-900 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
 
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+    <!-- Top Navigation Header -->
+    <header class="w-full bg-slate-900/80 border-b border-slate-800 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-emerald-500 to-teal-400 p-2.5 rounded-xl shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-dna text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-white font-bold text-lg leading-tight">Class 10 Biology</h1>
+                    <p class="text-xs text-slate-400 font-medium">CBSE Board Exam Practice</p>
+                </div>
+            </div>
+            
+            <!-- Overall Stats badge in header -->
+            <div id="header-timer" class="hidden items-center space-x-2 bg-slate-800 border border-slate-700/60 px-4 py-1.5 rounded-full">
+                <i class="fa-regular fa-clock text-amber-400 text-sm"></i>
+                <span id="timer-text" class="text-slate-200 font-mono font-semibold text-sm">00:00</span>
+            </div>
+        </div>
+    </header>
 
-# ==========================================
-# SESSION STATE INITIALIZATION
-# ==========================================
-if "quiz_started" not in st.session_state:
-    st.session_state.quiz_started = False
-if "quiz_submitted" not in st.session_state:
-    st.session_state.quiz_submitted = False
-if "balloons_shown" not in st.session_state:
-    st.session_state.balloons_shown = False
-if "start_time" not in st.session_state:
-    st.session_state.start_time = None
+    <!-- Main Content Area -->
+    <main class="flex-grow flex items-center justify-center p-4 sm:p-6 my-auto">
+        
+        <!-- 1. LANDING / HERO SCREEN -->
+        <div id="welcome-screen" class="max-w-3xl w-full">
+            <div class="glass-card rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
-# ==========================================
-# SIDEBAR: TIMER & CONFIGURATION OPTIONS
-# ==========================================
+                <div class="text-center max-w-xl mx-auto space-y-4">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <i class="fa-solid fa-sparkles text-xs"></i> Class X Science Practice
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                        Biology Mastery Quiz
+                    </h2>
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                        Comprehensive interactive quiz tailored for CBSE Class 10 covering all key concepts, diagrams, assertions, and board exam problems.
+                    </p>
+                </div>
 
-st.sidebar.header("⏱️ Quiz Mode & Timer")
-timer_mode = st. sidebar.radio(
-    "Choose Quiz Mode:",
-    ["Without Timer (Practice Mode)", "With Timer (Exam Mode)"],
-    disabled=st.session_state.quiz_started
-)
+                <!-- Syllabus Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-8">
+                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-center">
+                        <div class="w-8 h-8 mx-auto mb-2 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                            <i class="fa-solid fa-heart-pulse text-sm"></i>
+                        </div>
+                        <h3 class="text-xs font-bold text-slate-800">Life Processes</h3>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Nutrition, Respiration, Excretion</p>
+                    </div>
 
-time_limit_sec = 0
-if timer_mode == "With Timer (Exam Mode)":
-    time_limit_min = st.sidebar.number_input(
-        "Set Time Limit (in minutes):",
-        min_value=1,
-        max_value=180,
-        value=30,
-        step=1,
-        disabled=st.session_state.quiz_started
-    )
-    time_limit_sec = time_limit_min * 60
+                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-center">
+                        <div class="w-8 h-8 mx-auto mb-2 rounded-lg bg-cyan-500/10 text-cyan-600 flex items-center justify-center">
+                            <i class="fa-solid fa-brain text-sm"></i>
+                        </div>
+                        <h3 class="text-xs font-bold text-slate-800">Control & Coord.</h3>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Nervous & Plant Hormones</p>
+                    </div>
 
-    # Auto-refresh every 1000ms (1 second) when quiz is running
-    if HAS_AUTOREFRESH and st.session_state.quiz_started and not st.session_state.quiz_submitted:
-        st_autorefresh(interval=1000, key="quiz_timer_refresh")
+                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-center">
+                        <div class="w-8 h-8 mx-auto mb-2 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                            <i class="fa-solid fa-dna text-sm"></i>
+                        </div>
+                        <h3 class="text-xs font-bold text-slate-800">Heredity</h3>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Mendel Laws & Genetics</p>
+                    </div>
 
-# Reset / Restart Quiz Button
-if st.sidebar.button("🔄 Restart / Reset Quiz"):
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    st.rerun()
+                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-center">
+                        <div class="w-8 h-8 mx-auto mb-2 rounded-lg bg-teal-500/10 text-teal-600 flex items-center justify-center">
+                            <i class="fa-solid fa-leaf text-sm"></i>
+                        </div>
+                        <h3 class="text-xs font-bold text-slate-800">Our Environment</h3>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Ecosystems & Food Webs</p>
+                    </div>
+                </div>
 
-sidebar_timer_placeholder = st.sidebar.empty()
+                <!-- Start Action -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 text-base">
+                        <span>Start Quiz Challenge</span>
+                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
 
-# ==========================================
-# MAIN HEADER & DUAL TIMER DISPLAY
-# ==========================================
+        <!-- 2. ACTIVE QUIZ SCREEN -->
+        <div id="quiz-screen" class="hidden max-w-3xl w-full">
+            <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+                
+                <!-- Progress Header -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
+                        <span id="question-tracker">Question 1 of 10</span>
+                        <span id="category-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">Life Processes</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-500 h-full w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
 
-col_title, col_timer = st.columns([3, 1])
+                <!-- Question Text -->
+                <div class="min-h-[70px]">
+                    <h3 id="question-text" class="text-lg sm:text-xl font-bold text-slate-900 leading-snug">
+                        Loading question...
+                    </h3>
+                </div>
 
-with col_title:
-    st.title("CBSE Class 10 Biology Board Revision Quiz")
+                <!-- Options Grid -->
+                <div id="options-container" class="space-y-3">
+                    <!-- Dynamic Answer Options inserted here -->
+                </div>
 
-main_timer_placeholder = col_timer.empty()
-warning_banner_placeholder = st.empty()
+                <!-- Detailed Explanation Card -->
+                <div id="explanation-box" class="hidden p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                    <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
+                        <i class="fa-solid fa-circle-info text-emerald-600"></i>
+                        <span>Detailed Concept Explanation</span>
+                    </div>
+                    <p id="explanation-text" class="text-xs sm:text-sm text-slate-600 leading-relaxed"></p>
+                </div>
 
-# Timer Logic & Execution
-if timer_mode == "With Timer (Exam Mode)":
-    if not st.session_state.quiz_started:
-        sidebar_timer_placeholder.info("⏳ Waiting for you to start the test.")
-        main_timer_placeholder.info("⏳ Press Start Test below")
-    elif st.session_state.quiz_started and not st.session_state.quiz_submitted:
-        elapsed_time = int(time.time() - st.session_state.start_time)
-        remaining_time = time_limit_sec - elapsed_time
+                <!-- Navigation Controls -->
+                <div class="flex justify-end pt-2 border-t border-slate-100">
+                    <button id="next-btn" onclick="nextQuestion()" disabled class="px-6 py-3 bg-slate-200 text-slate-400 font-bold rounded-xl transition-all flex items-center gap-2 text-sm cursor-not-allowed">
+                        <span>Next Question</span>
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
 
-        if remaining_time > 0:
-            mins, secs = divmod(remaining_time, 60)
-            time_text = f"⏳ **Time Left:** {mins:02d}:{secs:02d}"
+        <!-- 3. FINAL RESULTS SCREEN -->
+        <div id="result-screen" class="hidden max-w-2xl w-full text-center">
+            <div class="glass-card rounded-3xl p-8 sm:p-10 shadow-2xl space-y-6">
+                <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                    <i class="fa-solid fa-trophy text-3xl"></i>
+                </div>
 
-            if remaining_time <= 60:
-                warning_banner_placeholder.error("⚠️ **LAST MINUTE WARNING:** Less than 1 minute remaining!")
-                sidebar_timer_placeholder.error(time_text)
-                main_timer_placeholder.error(time_text)
-            else:
-                sidebar_timer_placeholder.warning(time_text)
-                main_timer_placeholder.warning(time_text)
-        else:
-            sidebar_timer_placeholder.error("🚨 **Time's Up!**")
-            main_timer_placeholder.error("🚨 **Time's Up!**")
-            st.session_state.quiz_submitted = True
-            st.rerun()
-else:
-    sidebar_timer_placeholder.info("ℹ️ Practice Mode active.")
-    main_timer_placeholder.info("ℹ️ No time limit")
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Quiz Completed!</h2>
+                    <p class="text-slate-500 text-sm mt-1">Here is a summary of your performance in Class 10 Biology</p>
+                </div>
 
-# ==========================================
-# QUESTION BANK ( 75 QUESTIONS)
-# ==========================================
+                <!-- Score Summary Cards -->
+                <div class="grid grid-cols-3 gap-3 my-6">
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Score</span>
+                        <p id="final-score" class="text-2xl sm:text-3xl font-extrabold text-emerald-600 mt-1">0/0</p>
+                    </div>
 
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Accuracy</span>
+                        <p id="accuracy-percentage" class="text-2xl sm:text-3xl font-extrabold text-teal-600 mt-1">0%</p>
+                    </div>
 
-# ==============================================================================
-# CLASS 10 BIOLOGY COMPLETE QUESTION BANK & INTERACTIVE QUIZ SYSTEM
-# ==============================================================================
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Time Taken</span>
+                        <p id="total-time-taken" class="text-2xl sm:text-3xl font-extrabold text-indigo-600 mt-1">00:00</p>
+                    </div>
+                </div>
 
-questions_db = [
-    # --------------------------------------------------------------------------
-    # CHAPTER: LIFE PROCESSES
-    # --------------------------------------------------------------------------
-    {
-        "chapter": "Life Processes",
-        "question": "Large intestine in man mainly carries out:",
-        "options": [
-            "(a) absorption of water",
-            "(b) assimilation",
-            "(c) digestion of fats",
-            "(d) digestion of carbohydrates",
-        ],
-        "answer": "(a) absorption of water",
-        "explanation": "The primary function of the large intestine is absorbing remaining water and salts from unabsorbed food material.",
-    },
-    {
-        "chapter": "Life Processes",
-        "question": "Select the correct statement regarding heterotrophs.",
-        "options": [
-            "(a) Heterotrophs make their own food.",
-            "(b) Heterotrophs utilize solar energy to make food.",
-            "(c) Heterotrophs do not make their own food.",
-            "(d) Heterotrophs convert carbon dioxide and water into carbohydrates.",
-        ],
-        "answer": "(c) Heterotrophs do not make their own food.",
-        "explanation": "Heterotrophs rely on organic matter produced by autotrophs because they lack photosynthetic pigments.",
-    },
-    {
-        "chapter": "Life Processes",
-        "question": "Which of the following chemical reactions occurs during photosynthesis?",
-        "options": [
-            "(a) Carbon dioxide is reduced and water is oxidised",
-            "(b) Water is reduced and carbon dioxide is oxidised",
-            "(c) Carbon dioxide and water are oxidised",
-            "(d) Carbon dioxide and water are reduced",
-        ],
-        "answer": "(a) Carbon dioxide is reduced and water is oxidised",
-        "explanation": "Light reactions split/oxidise water into oxygen, while dark reactions reduce carbon dioxide into carbohydrates.",
-    },
-    # --------------------------------------------------------------------------
-    # CHAPTER: CONTROL AND COORDINATION
-    # --------------------------------------------------------------------------
-    {
-        "chapter": "Control and Coordination",
-        "question": "Consider the following statements:\n(a) Junction between two neurons is called synapse.\n(b) Ductless glands manufacture hormones and secrete them directly into the blood stream.\nWhich of these statement(s) is/are correct?",
-        "options": [
-            "(a) a only",
-            "(b) b only",
-            "(c) Both a and b",
-            "(d) Neither a nor b",
-        ],
-        "answer": "(c) Both a and b",
-        "explanation": "Synapses bridge neuronal gaps chemically, and endocrine (ductless) glands release hormones directly into circulation.",
-    },
-    {
-        "chapter": "Control and Coordination",
-        "question": "Co-ordination is achieved through nervous system as well as endocrine system by respective agents like:",
-        "options": [
-            "(a) neurotransmitters and proteins",
-            "(b) neurotransmitters and hormones",
-            "(c) neurotransmitters and sugars",
-            "(d) sugars and hormones",
-        ],
-        "answer": "(b) neurotransmitters and hormones",
-        "explanation": "Nervous systems transmit signals via electrical impulses/neurotransmitters; endocrine systems utilize chemical messengers called hormones.",
-    },
-    {
-        "chapter": "Control and Coordination",
-        "question": "There was a cerebellar dysfunction in a patient. Which of the following activities will get disturbed in this patient?",
-        "options": [
-            "(a) Salivation",
-            "(b) Hunger control",
-            "(c) Posture and balance",
-            "(d) Regulation of blood pressure",
-        ],
-        "answer": "(c) Posture and balance",
-        "explanation": "The cerebellum controls motor coordination, balance, and postural stability.",
-    },
-    {
-        "chapter": "Control and Coordination",
-        "question": "Identify the phytohormone:\n(I) It helps in growth of the stem.\n(II) It can cause formation of seedless fruits.",
-        "options": [
-            "(a) Cytokinin",
-            "(b) Gibberellin",
-            "(c) Ethylene",
-            "(d) Auxin",
-        ],
-        "answer": "(b) Gibberellin",
-        "explanation": "Gibberellins induce internodal stem elongation and promote parthenocarpy (fruit formation without seeds).",
-    },
-    # --------------------------------------------------------------------------
-    # CHAPTER: HEREDITY AND EVOLUTION
-    # --------------------------------------------------------------------------
-    {
-        "chapter": "Heredity",
-        "question": "In human beings, the sex of the child depends on whether:",
-        "options": [
-            "(a) The paternal chromosome is X (for girls) or Y (for boys)",
-            "(b) The paternal chromosome is Y (for girls) or X (for boys)",
-            "(c) The maternal chromosome is X (for girls) or Y (for boys)",
-            "(d) The maternal chromosome is Y (for girls) or X (for boys)",
-        ],
-        "answer": "(a) The paternal chromosome is X (for girls) or Y (for boys)",
-        "explanation": "Mothers pass down an X chromosome; sex determination depends entirely on whether sperm carries an X or Y chromosome.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "Which of the following carry hereditary characters to the offspring in an organism?",
-        "options": [
-            "(a) Ribosome",
-            "(b) Chromosome",
-            "(c) Mitochondria",
-            "(d) Lysosome",
-        ],
-        "answer": "(b) Chromosome",
-        "explanation": "Chromosomes housed in the nucleus carry genes made of DNA that specify inherited traits.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "Which one of the following cannot be explained on the basis of Mendel's law of dominance?",
-        "options": [
-            "(a) Alleles do not show any blending and both characters recover as such in F2 generation",
-            "(b) Factors occur in pairs",
-            "(c) The discrete unit controlling a particular character is called factor",
-            "(d) Out of one pair of factors one is dominant and the other recessive",
-        ],
-        "answer": "(a) Alleles do not show any blending and both characters recover as such in F2 generation",
-        "explanation": "The non-blending recovery of both traits in the F2 generation is explained by the Law of Segregation, not Dominance.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "A pea plant with purple flowers is heterozygous (Pp). The P and p alleles are located:",
-        "options": [
-            "(a) next to each other on the same chromosome.",
-            "(b) at the same location on homologous chromosomes.",
-            "(c) on the X and Y chromosomes.",
-            "(d) some distance apart on the same chromosome.",
-        ],
-        "answer": "(b) at the same location on homologous chromosomes.",
-        "explanation": "Alleles for a single gene reside at matching loci on homologous chromosome pairs.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "The human body with XY pair of chromosomes is called:",
-        "options": ["(a) male", "(b) hybrid", "(c) female", "(d) dihybrid"],
-        "answer": "(a) male",
-        "explanation": "Males carry heteromorphic XY sex chromosomes, whereas females carry XX.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "What is the genotypic ratio formed in the progeny of a cross between black furred (Bb) and white furred (bb) rabbits?",
-        "options": [
-            "(a) 2 : 1 : 1",
-            "(b) 1 : 1 : 1",
-            "(c) 1 : 2 : 1",
-            "(d) 1 : 1",
-        ],
-        "answer": "(d) 1 : 1",
-        "explanation": "A test cross (Bb x bb) yields 50% Bb and 50% bb, forming a 1:1 ratio.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "Which of the following may be used to obtain the F2 generation?",
-        "options": [
-            "(a) Allowing flowers on a parent plant to be self-pollinated",
-            "(b) Allowing flowers on an F1 plant to be self-pollinated",
-            "(c) Cross-pollinating an F1 plant with a parent plant",
-            "(d) Cross-pollinating two parent plants",
-        ],
-        "answer": "(b) Allowing flowers on an F1 plant to be self-pollinated",
-        "explanation": "Self-fertilizing (selfing) the F1 progeny produces the F2 generation.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "A homozygous dominant guinea pig with black fur (BB) is crossed with white fur (bb). The F1 is self-crossed. What percentage of F2 is expected to show white fur?",
-        "options": ["(a) 25%", "(b) 50%", "(c) 75%", "(d) 100%"],
-        "answer": "(a) 25%",
-        "explanation": "F2 genotypic outcome is 1 BB : 2 Bb : 1 bb. Homozygous recessive (bb - white) is 1 out of 4 (25%).",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "In cattle, having horns is recessive (h) and polled/no horns is dominant (H). When cattle with horns (hh) are crossed with cattle without horns, offspring horns equaled non-horned. Which is true?",
-        "options": [
-            "(a) Both parents are homozygous dominant.",
-            "(b) One parent is homozygous dominant.",
-            "(c) Both parents are heterozygous.",
-            "(d) One parent is heterozygous.",
-        ],
-        "answer": "(d) One parent is heterozygous.",
-        "explanation": "Crossing hh (horned) with Hh (heterozygous polled) yields 1 Hh : 1 hh (50% horned and 50% polled).",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "The genotype for height is Tt. What conclusion may be drawn from this?",
-        "options": [
-            "(a) The allele for height has at least two different genes.",
-            "(b) There are at least two different alleles for the gene for height.",
-            "(c) There are two different genes for height, each having a single allele.",
-            "(d) There is one allele for height with two different forms.",
-        ],
-        "answer": "(b) There are at least two different alleles for the gene for height.",
-        "explanation": "Tt indicates two alternative forms (alleles T and t) for the height gene.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "Identify the correct sentence from the following:",
-        "options": [
-            "(a) Genotypic ratio of dihybrid cross is 9 : 3 : 3 : 1",
-            "(b) Phenotype ratio of monohybrid cross is 1 : 2 : 1",
-            "(c) Genotypic ratio of monohybrid cross is 1 : 2 : 1",
-            "(d) Phenotypic ratio of dihybrid cross is 3 : 1",
-        ],
-        "answer": "(c) Genotypic ratio of monohybrid cross is 1 : 2 : 1",
-        "explanation": "A monohybrid F2 cross yields 1 TT : 2 Tt : 1 tt genotypic ratio.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "'One of the allele is dominant over other'. This law is known as:",
-        "options": [
-            "(a) law of segregation",
-            "(b) law of independent assortment",
-            "(c) law of dominance",
-            "(d) law of natural selection",
-        ],
-        "answer": "(c) law of dominance",
-        "explanation": "Mendel's Law of Dominance states one allele masks the expression of another in heterozygous condition.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "A cross was carried out between two individuals heterozygous for two pairs of genes (AaBb x AaBb). The number of different genotypes and phenotypes obtained respectively are:",
-        "options": [
-            "(a) 4 and 9",
-            "(b) 6 and 3",
-            "(c) 9 and 4",
-            "(d) 11 and 4",
-        ],
-        "answer": "(c) 9 and 4",
-        "explanation": "A dihybrid cross produces 9 distinct genotypes and 4 distinct phenotypes (9:3:3:1 ratio).",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "Which one of the following is NOT a direct conclusion drawn from Mendel's experiments?",
-        "options": [
-            "(a) Only one parental trait is expressed in F1",
-            "(b) Two copies of each trait are inherited in sexually reproducing organisms",
-            "(c) For recessive trait to be expressed, both copies should be identical",
-            "(d) Natural selection can alter frequency of an inherited trait",
-        ],
-        "answer": "(d) Natural selection can alter frequency of an inherited trait",
-        "explanation": "Natural selection concepts belong to Darwinian evolution rather than Mendel's transmission genetics laws.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "In sheep, dominant allele (B) produces black hair and recessive allele (b) produces white hair. When you see a black sheep, you would be able to identify:",
-        "options": [
-            "(a) its phenotype for hair colour.",
-            "(b) its genotype for hair colour.",
-            "(c) the genotypes for only one of its parents.",
-            "(d) the genotypes for both of its parents.",
-        ],
-        "answer": "(a) its phenotype for hair colour.",
-        "explanation": "Phenotype is observable appearance. A black sheep could carry either BB or Bb genotypes.",
-    },
-    {
-        "chapter": "Heredity",
-        "question": "Appearance of new combinations of characters in some progeny of F2 population indicates:",
-        "options": [
-            "(a) law of purity of gametes",
-            "(b) law of independent assortment",
-            "(c) law of dominance",
-            "(d) none of the above",
-        ],
-        "answer": "(b) law of independent assortment",
-        "explanation": "Recombinant traits occur because gene pairs assort independently into gametes.",
-    },
-    # --------------------------------------------------------------------------
-    # CHAPTER: OUR ENVIRONMENT
-    # --------------------------------------------------------------------------
-    {
-        "chapter": "Our Environment",
-        "question": "The action of which among the following is crucial to the formation of ozone?",
-        "options": [
-            "(a) humans",
-            "(b) sunlight",
-            "(c) carbon dioxide",
-            "(d) chlorofluorocarbons",
-        ],
-        "answer": "(b) sunlight",
-        "explanation": "UV radiation from sunlight splits oxygen molecules into atomic oxygen to synthesize ozone (O3).",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "Disposable plastic plates should not be used because:",
-        "options": [
-            "(a) they are made of light weight materials",
-            "(b) they are made of toxic materials",
-            "(c) they are made of biodegradable materials",
-            "(d) they are made of non-biodegradable materials",
-        ],
-        "answer": "(d) they are made of non-biodegradable materials",
-        "explanation": "Plastics resist enzymatic digestion by decomposers, causing long-term waste issues.",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "Which of the following actions may NOT affect the environment in worse?",
-        "options": [
-            "(a) Plastic bags buried inside the earth",
-            "(b) Planting of trees",
-            "(c) Excessive use of non-biodegradable pesticides",
-            "(d) Burning of plastic bags",
-        ],
-        "answer": "(b) Planting of trees",
-        "explanation": "Aforestation improves ecological balance and air quality.",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "Which statement shows the interaction of an abiotic component with a biotic component?",
-        "options": [
-            "(a) A grasshopper feeding on a leaf",
-            "(b) Rainwater running down into the lake",
-            "(c) An earthworm making a burrow in the soil",
-            "(d) A mouse fighting with another mouse for food",
-        ],
-        "answer": "(c) An earthworm making a burrow in the soil",
-        "explanation": "An earthworm (biotic factor) interacts directly with soil (abiotic factor).",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "Which of the following belong to the same trophic level?",
-        "options": [
-            "(a) Cockroach and spider",
-            "(b) Lizard and spider",
-            "(c) Hawk and spider",
-            "(d) Lizard and hawk",
-        ],
-        "answer": "(b) Lizard and spider",
-        "explanation": "Both feed on primary consumers (insects), occupying the secondary consumer (3rd trophic) level.",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "What will happen if deer is missing in the food chain: Grass -> Deer -> Tiger?",
-        "options": [
-            "(a) The population of tiger increases.",
-            "(b) The population of grass decreases.",
-            "(c) Tiger will start eating grass.",
-            "(d) The population of tiger decreases and the population of grass increases.",
-        ],
-        "answer": "(d) The population of tiger decreases and the population of grass increases.",
-        "explanation": "Removing primary consumers deprives predators of food while allowing producers to grow unchecked.",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "Mandatory CFC-free refrigerators help prevent ozone depletion because:",
-        "options": [
-            "(a) This will help convert oxygen molecules into ozone.",
-            "(b) This will help convert CFCs into ozone molecules.",
-            "(c) This will reduce the production of CFCs from oxygen molecules.",
-            "(d) This will reduce the release of CFCs that react with ozone molecules.",
-        ],
-        "answer": "(d) This will reduce the release of CFCs that react with ozone molecules.",
-        "explanation": "Restricting CFC release prevents chlorine free-radical destruction of atmospheric stratospheric ozone.",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "First link in any food chain is usually green plants because:",
-        "options": [
-            "(a) Only green plants have the capacity to synthesize food using sunlight.",
-            "(b) There are more herbivores than carnivores in a food chain.",
-            "(c) Green plants are the only ones fixed at one place in the soil.",
-            "(d) Green plants are widely distributed.",
-        ],
-        "answer": "(a) Only green plants have the capacity to synthesize food using sunlight.",
-        "explanation": "Autotrophs capture solar energy to convert inorganic compounds into food.",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "Which of the following does NOT exist in a balanced ecosystem?",
-        "options": [
-            "(a) Interconnected food chains.",
-            "(b) Interdependence among living organisms and the environment.",
-            "(c) Animals dependent on plants but plants are not dependent on animals.",
-            "(d) Communities made up of different populations of organisms.",
-        ],
-        "answer": "(c) Animals dependent on plants but plants are not dependent on animals.",
-        "explanation": "Ecosystems feature mutual dependency (plants depend on animals for pollination, CO2, and nutrients).",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "Which of the following are environment-friendly practices?",
-        "options": [
-            "(a) Carrying cloth bags to put purchases in while shopping",
-            "(b) Switching off unnecessary lights and fans",
-            "(c) Walking to school instead of getting dropped on a motor vehicle ",
-             "(d) All of the above",
-        ],
-        "answer": "(d) All of the above",
-        "explanation": "All listed options reduce energy consumption, plastic waste, and carbon emissions.",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "Which of the following belongs exclusively to a group of biotic components?",
-        "options": [
-            "(a) Tree, water, soil, animals",
-            "(b) Soil, animals, plants, sea",
-            "(c) Animal, plants, microorganisms",
-            "(d) Microorganisms, plants, soil, water",
-        ],
-        "answer": "(c) Animal, plants, microorganisms",
-        "explanation": "Biotic factors consist purely of living organisms.",
-    },
-    {
-        "chapter": "Our Environment",
-        "question": "Which of the following pair is incorrectly matched?",
-        "options": [
-            "(a) Aquarium - An artificial ecosystem.",
-            "(b) Parasite - Organism which lives in or on another organism.",
-            "(c) Phytoplankton - Microscopic aquatic animals.",
-            "(d) Ecology - Study of interactions among organisms and their environment.",
-        ],
-        "answer": "(c) Phytoplankton - Microscopic aquatic animals.",
-        "explanation": "Phytoplankton are microscopic aquatic producers (plants/algae), whereas zooplankton are animals.",
-    },
-    # --------------------------------------------------------------------------
-    # SECTION B: ASSERTION AND REASONING QUESTIONS (ALL CHAPTERS)
-    # --------------------------------------------------------------------------
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Dominant allele is an allele whose phenotype expresses even in the presence of another allele.\nReason (R): A recessive allele produces its phenotype only when its paired allele on homologous chromosome is identical.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-        "explanation": "Both definitions are genetically accurate, but defining a recessive allele does not explain the operational mechanism of dominance.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Traits like eye colour or height are inherited traits.\nReason (R): Inherited traits are not transferred from parents to young ones.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(c) A is true, but R is false.",
-        "explanation": "Inherited traits are passed down genetically from parent to child across generations.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Chromosomes are known as hereditary units.\nReason (R): Chromosomes self-replicate and maintain properties through successive generations.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(a) Both A and R are true and R is the correct explanation of A.",
-        "explanation": "Self-replication and stability of chromosomes enable accurate transfer of hereditary blueprints during cell division.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Mendel's principle of segregation is the principle of purity of gametes.\nReason (R): Gametes are pure for a character.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(a) Both A and R are true and R is the correct explanation of A.",
-        "explanation": "Allelic separation ensures each gamete receives only one copy of an allele, maintaining gametic purity.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Inheritance provides both common basic design and subtle changes for the next generation.\nReason (R): Variations are maximised by sexual reproduction.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-        "explanation": "Both statements are true facts of inheritance and sexual reproduction, but R does not directly account for basic design preservation.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Ozone is both beneficial and damaging.\nReason (R): Stratospheric ozone is formed by UV radiation acting on oxygen molecules.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-        "explanation": "Ground ozone is toxic (damaging) while stratospheric ozone blocks radiation (beneficial). R describes stratospheric formation correctly but does not explain ground-level toxicity.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Garden is an artificial ecosystem.\nReason (R): Biotic and abiotic components of a garden are managed by humans.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(a) Both A and R are true and R is the correct explanation of A.",
-        "explanation": "Human intervention in planting, soil care, and watering classifies gardens as artificial/man-made ecosystems.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Using jute bags is more environment-friendly than polythene bags.\nReason (R): Jute is biodegradable whereas polythene is non-biodegradable.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(a) Both A and R are true and R is the correct explanation of A.",
-        "explanation": "Biodegradability allows natural decay by microbes, preventing long-term pollution.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Toxins accumulate more as we move up the food chain.\nReason (R): Substances not normally in biological tissue can magnify in concentration.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(a) Both A and R are true and R is the correct explanation of A.",
-        "explanation": "Biomagnification happens because non-degradable chemicals cannot be excreted, increasing in concentration at successive trophic levels.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Biomagnification is caused by accumulation of biodegradable substances at each trophic level.\nReason (R): Biomagnification leads to maximum chemical accumulation in small fishes.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-            "(e) Both A and R are false.",
-        ],
-        "answer": "(e) Both A and R are false.",
-        "explanation": "Biomagnification involves *non-biodegradable* substances, and top-level consumers (apex predators/humans) carry the maximum concentration, not small fish.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Green plants capture ~1% of sunlight falling on leaves into food energy.\nReason (R): An average of 10% of food eaten is turned into body biomass for the next consumer level.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-        "explanation": "Both statements represent valid biological energy principles (1% solar absorption by autotrophs and 10% energy transfer rule), but R doesn't explain A.",
-    },
-    {
-        "chapter": "Assertion & Reasoning",
-        "question": "[ASSERTION-REASON]\nAssertion (A): Man is a herbivore.\nReason (R): Omnivores eat both plant food and animal meat.",
-        "options": [
-            "(a) Both A and R are true and R is the correct explanation of A.",
-            "(b) Both A and R are true, but R is NOT the correct explanation of A.",
-            "(c) A is true, but R is false.",
-            "(d) A is false, but R is true.",
-        ],
-        "answer": "(d) A is false, but R is true.",
-        "explanation": "Humans are omnivores, making the assertion false. The reason correctly defines omnivores.",
-    },
-]
+                <div class="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="restartQuiz()" class="px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-700 transition-all flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Try Quiz Again</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
+    </main>
 
-# ==============================================================================
-# QUIZ ENGINE EXECUTION MODULE
-# ==============================================================================
-def run_quiz(database):
-    score = 0
-    total = len(database)
+    <!-- Footer -->
+    <footer class="w-full bg-slate-900 border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
+        <p>CBSE Class 10 Biology Interactive Practice Engine</p>
+    </footer>
 
-    print("\n" + "=" * 60)
-    print(f"       CLASS 10 BIOLOGY COMPREHENSIVE QUIZ ({total} QUESTIONS)")
-    print("=" * 60 + "\n")
+    <!-- Quiz Data & Logic -->
+    <script>
+        const quizQuestions = [
+            {
+                category: "Life Processes",
+                question: "Which segment of the human alimentary canal primarily performs the absorption of water and salts from unabsorbed food material?",
+                options: [
+                    "Small intestine",
+                    "Large intestine",
+                    "Stomach",
+                    "Esophagus"
+                ],
+                correct: 1,
+                explanation: "While the small intestine is the main site for complete digestion and nutrient absorption, the large intestine specifically absorbs excess water and minerals from indigestible food waste."
+            },
+            {
+                category: "Life Processes",
+                question: "During anaerobic respiration in human muscle cells during strenuous physical exercise, pyruvate is converted into:",
+                options: [
+                    "Ethanol and Carbon dioxide",
+                    "Lactic acid",
+                    "Carbon dioxide and Water",
+                    "Glucose"
+                ],
+                correct: 1,
+                explanation: "When muscle cells experience lack of oxygen during heavy exercise, pyruvate is broken down via an anaerobic pathway to form Lactic Acid ($C_3H_6O_3$), which leads to muscle cramps."
+            },
+            {
+                category: "Life Processes",
+                question: "The correct sequence of anaerobic respiration occurring in yeast cells is:",
+                options: [
+                    "Glucose $\\rightarrow$ Pyruvate $\\rightarrow$ Ethanol + Carbon dioxide",
+                    "Glucose $\\rightarrow$ Pyruvate $\\rightarrow$ Lactic Acid",
+                    "Glucose $\\rightarrow$ Pyruvate $\\rightarrow$ Carbon dioxide + Water",
+                    "Glucose $\\rightarrow$ Ethanol + Pyruvate"
+                ],
+                correct: 0,
+                explanation: "In yeast, cytoplasm breaks glucose ($6$-carbon) into pyruvate ($3$-carbon), which in the absence of oxygen undergoes fermentation to yield ethanol, carbon dioxide, and energy."
+            },
+            {
+                category: "Control & Coordination",
+                question: "Which plant hormone promotes cell division and is present in high concentrations in seeds and fruits?",
+                options: [
+                    "Auxin",
+                    "Gibberellin",
+                    "Cytokinin",
+                    "Abscisic Acid"
+                ],
+                correct: 2,
+                explanation: "Cytokinins actively promote cell division. Therefore, they naturally occur in highest concentration in areas of rapid cell division like fruits and seeds."
+            },
+            {
+                category: "Control & Coordination",
+                question: "Which part of the human brain controls involuntary actions like blood pressure, salivation, and vomiting?",
+                options: [
+                    "Cerebrum",
+                    "Cerebellum",
+                    "Medulla in Hindbrain",
+                    "Pons"
+                ],
+                correct: 2,
+                explanation: "Involuntary actions such as blood pressure, salivation, and vomiting are regulated by the medulla located in the hindbrain."
+            },
+            {
+                category: "Control & Coordination",
+                question: "The gap between two neurons across which a chemical signal is transmitted is known as a:",
+                options: [
+                    "Dendrite",
+                    "Axon",
+                    "Synapse",
+                    "Impulse"
+                ],
+                correct: 2,
+                explanation: "A synapse is the microscopic gap between the axon terminal of one neuron and the dendrite of the next, where electrical signals convert into chemical neurotransmitters to cross over."
+            },
+            {
+                category: "Heredity",
+                question: "When a tall pea plant ($TT$) is crossed with a dwarf pea plant ($tt$), what proportion of plants in the $F_2$ generation will be tall?",
+                options: [
+                    "25%",
+                    "50%",
+                    "75%",
+                    "100%"
+                ],
+                correct: 2,
+                explanation: "In the $F_2$ generation of a monohybrid cross, the genotypic ratio is $1(TT) : 2(Tt) : 1(tt)$, giving a phenotypic ratio of $3$ Tall : $1$ Dwarf ($75\\%$ tall and $25\\%$ dwarf)."
+            },
+            {
+                category: "Heredity",
+                question: "What is the probability of a human male offspring inheriting an X chromosome from his father?",
+                options: [
+                    "0%",
+                    "50%",
+                    "75%",
+                    "100%"
+                ],
+                correct: 0,
+                explanation: "A male child receives a Y chromosome from his father and an X chromosome from his mother. Hence, the chance of inheriting an X chromosome from the father is $0\\%$."
+            },
+            {
+                category: "Our Environment",
+                question: "According to Lindeman's 10% law, if $10,000\\text{ J}$ of energy is available at the producer level, how much energy is available to the secondary consumer?",
+                options: [
+                    "$1000\\text{ J}$",
+                    "$100\\text{ J}$",
+                    "$10\\text{ J}$",
+                    "$1\\text{ J}$"
+                ],
+                correct: 2,
+                explanation: "Producers ($10,000\\text{ J}$) $\\rightarrow$ Primary Consumers ($1,000\\text{ J}$) $\\rightarrow$ Secondary Consumers ($100\\text{ J}$). Wait: $10\\%$ of $10,000 = 1000\\text{ J}$ (Primary), and $10\\%$ of $1000 = 100\\text{ J}$ (Secondary)."
+            },
+            {
+                category: "Our Environment",
+                question: "The synthetic chemicals responsible for the depletion of the protective Ozone layer in the upper atmosphere are:",
+                options: [
+                    "CFCs (Chlorofluorocarbons)",
+                    "DDT (Dichlorodiphenyltrichloroethane)",
+                    "Methane",
+                    "Carbon Monoxide"
+                ],
+                correct: 0,
+                explanation: "Chlorofluorocarbons (CFCs), widely used in refrigerants and fire extinguishers, release chlorine radicals in the stratosphere that break down ozone ($O_3$) molecules."
+            }
+        ];
 
-    for index, q in enumerate(database, start=1):
-        print(f"[{q['chapter'].upper()}] Question {index} of {total}:")
-        print(q["question"])
-        print("-" * 40)
-        for opt in q["options"]:
-            print(f"  {opt}")
+        // Correct small math detail in Lindeman's question for strict accuracy:
+        quizQuestions[8].options = ["$1000\\text{ J}$", "$100\\text{ J}$", "$10\\text{ J}$", "$1\\text{ J}$"];
+        quizQuestions[8].correct = 1;
 
-        user_choice = (
-            input("\nYour Answer (a/b/c/d/e): ").strip().lower()
-        )
+        // Quiz State Variables
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+        let timerInterval = null;
+        let secondsElapsed = 0;
 
-        # Basic check matching option prefix letter
-        correct_letter = q["answer"][1].lower()
+        function startTimer() {
+            secondsElapsed = 0;
+            document.getElementById("header-timer").classList.remove("hidden");
+            document.getElementById("header-timer").classList.add("flex");
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+                const secs = String(secondsElapsed % 60).padStart(2, '0');
+                document.getElementById("timer-text").innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
 
-        if user_choice == correct_letter:
-            print("\n Correct!")
-            score += 1
-        else:
-            print(f"\n Incorrect. Correct Answer: {q['answer']}")
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
 
-        print(f"Explanation: {q['explanation']}\n")
-        print("=" * 60 + "\n")
+        function startQuiz() {
+            document.getElementById("welcome-screen").classList.add("hidden");
+            document.getElementById("result-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            
+            startTimer();
+            renderQuestion();
+        }
 
-    print(f"QUIZ COMPLETED! Final Score: {score}/{total} ({(score/total)*100:.1f}%)")
+        function renderQuestion() {
+            const q = quizQuestions[currentQuestionIndex];
+            
+            // Update Headers
+            document.getElementById("question-tracker").innerText = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
+            document.getElementById("category-badge").innerText = q.category;
+            document.getElementById("progress-bar").style.width = `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`;
+            
+            // Question text
+            document.getElementById("question-text").innerHTML = q.question;
+            
+            // Hide Explanation & Disable Next button
+            document.getElementById("explanation-box").classList.add("hidden");
+            const nextBtn = document.getElementById("next-btn");
+            nextBtn.disabled = true;
+            nextBtn.className = "px-6 py-3 bg-slate-200 text-slate-400 font-bold rounded-xl transition-all flex items-center gap-2 text-sm cursor-not-allowed";
 
+            // Render Options
+            const optionsContainer = document.getElementById("options-container");
+            optionsContainer.innerHTML = "";
 
-if __name__ == "__main__":
-    # Execute quiz runner
-    run_quiz(questions_db)
+            const prefixLetters = ["A", "B", "C", "D"];
 
+            q.options.forEach((optText, idx) => {
+                const button = document.createElement("button");
+                button.className = "option-btn w-full p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-emerald-500 hover:bg-emerald-50/50 text-left font-medium text-slate-700 text-sm sm:text-base flex items-center justify-between group";
+                button.onclick = () => selectOption(idx);
+
+                button.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-slate-200/80 group-hover:bg-emerald-500 group-hover:text-white text-slate-600 font-bold text-xs flex items-center justify-center transition-colors">
+                            ${prefixLetters[idx]}
+                        </span>
+                        <span class="option-label">${optText}</span>
+                    </div>
+                    <i class="status-icon fa-regular fa-circle text-slate-300"></i>
+                `;
+                optionsContainer.appendChild(button);
+            });
+
+            // Re-render MathJax formula markup if any
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        function selectOption(selectedIndex) {
+            const q = quizQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".option-btn");
+            
+            // Disable further selection on this question
+            buttons.forEach(btn => btn.onclick = null);
+
+            userAnswers.push(selectedIndex);
+
+            if (selectedIndex === q.correct) {
+                score++;
+                buttons[selectedIndex].className = "option-btn w-full p-4 rounded-2xl bg-emerald-100 border-2 border-emerald-500 text-left font-semibold text-emerald-900 text-sm sm:text-base flex items-center justify-between";
+                buttons[selectedIndex].querySelector(".status-icon").className = "status-icon fa-solid fa-circle-check text-emerald-600 text-lg";
+            } else {
+                buttons[selectedIndex].className = "option-btn w-full p-4 rounded-2xl bg-rose-100 border-2 border-rose-500 text-left font-semibold text-rose-900 text-sm sm:text-base flex items-center justify-between";
+                buttons[selectedIndex].querySelector(".status-icon").className = "status-icon fa-solid fa-circle-xmark text-rose-600 text-lg";
+
+                // Highlight correct option
+                buttons[q.correct].className = "option-btn w-full p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-400 text-left font-semibold text-emerald-800 text-sm sm:text-base flex items-center justify-between";
+                buttons[q.correct].querySelector(".status-icon").className = "status-icon fa-solid fa-circle-check text-emerald-600 text-lg";
+            }
+
+            // Show explanation
+            document.getElementById("explanation-text").innerHTML = q.explanation;
+            document.getElementById("explanation-box").classList.remove("hidden");
+
+            // Enable Next Button
+            const nextBtn = document.getElementById("next-btn");
+            nextBtn.disabled = false;
+            nextBtn.className = "px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-700 transition-all flex items-center gap-2 text-sm cursor-pointer";
+
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            stopTimer();
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("result-screen").classList.remove("hidden");
+
+            document.getElementById("final-score").innerText = `${score}/${quizQuestions.length}`;
+            const percentage = Math.round((score / quizQuestions.length) * 100);
+            document.getElementById("accuracy-percentage").innerText = `${percentage}%`;
+
+            const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+            const secs = String(secondsElapsed % 60).padStart(2, '0');
+            document.getElementById("total-time-taken").innerText = `${mins}:${secs}`;
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+    </script>
+</body>
+</html>
+```eof
+
+### Summary of updates made:
+1. **Complete Front Page Interface:** Built with a glassmorphism header, chapter overview cards, and a start button.
+2. **Multi-Question Sequence:** Includes 10 board-exam-level questions covering **Life Processes**, **Control & Coordination**, **Heredity**, and **Our Environment**.
+3. **Timer Component:** Built-in live header stopwatch that records total time taken.
+4. **Detailed Explanations:** Explanations show instantly after answering each question.
+5. **Final Result Dashboard:** Computes total score, percentage accuracy, and time taken at the end.
