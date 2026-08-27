@@ -8,7 +8,7 @@ try:
 except ImportError:
     HAS_AUTOREFRESH = False
 
-st.set_page_config(page_title="CBSE Class 10 Biology Quiz ", layout="wide")
+st.set_page_config(page_title="CBSE Class 10 Biology  Quiz ", layout="wide")
 ####i have kept it here
 
 # Complete hide for menus, footers, badges, and the breakout fullscreen button
@@ -100,3 +100,43 @@ sidebar_timer_placeholder = st.sidebar.empty()
 # ==========================================
 
 col_title, col_timer = st.columns([3, 1])
+
+with col_title:
+    st.title("CBSE Class 10 Biology Board Revision Quiz")
+
+main_timer_placeholder = col_timer.empty()
+warning_banner_placeholder = st.empty()
+
+# Timer Logic & Execution
+if timer_mode == "With Timer (Exam Mode)":
+    if not st.session_state.quiz_started:
+        sidebar_timer_placeholder.info("⏳ Waiting for you to start the test.")
+        main_timer_placeholder.info("⏳ Press Start Test below")
+    elif st.session_state.quiz_started and not st.session_state.quiz_submitted:
+        elapsed_time = int(time.time() - st.session_state.start_time)
+        remaining_time = time_limit_sec - elapsed_time
+
+        if remaining_time > 0:
+            mins, secs = divmod(remaining_time, 60)
+            time_text = f"⏳ **Time Left:** {mins:02d}:{secs:02d}"
+
+            if remaining_time <= 60:
+                warning_banner_placeholder.error("⚠️ **LAST MINUTE WARNING:** Less than 1 minute remaining!")
+                sidebar_timer_placeholder.error(time_text)
+                main_timer_placeholder.error(time_text)
+            else:
+                sidebar_timer_placeholder.warning(time_text)
+                main_timer_placeholder.warning(time_text)
+        else:
+            sidebar_timer_placeholder.error("🚨 **Time's Up!**")
+            main_timer_placeholder.error("🚨 **Time's Up!**")
+            st.session_state.quiz_submitted = True
+            st.rerun()
+else:
+    sidebar_timer_placeholder.info("ℹ️ Practice Mode active.")
+    main_timer_placeholder.info("ℹ️ No time limit")
+
+# ==========================================
+# QUESTION BANK ( 75 QUESTIONS)
+# ==========================================
+
