@@ -41,13 +41,6 @@ hide_streamlit_style = """
 
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
-
-
-
 # ==========================================
 # SESSION STATE INITIALIZATION
 # ==========================================
@@ -65,7 +58,7 @@ if "start_time" not in st.session_state:
 # ==========================================
 
 st.sidebar.header("⏱️ Quiz Mode & Timer")
-timer_mode = st.sidebar.radio(
+timer_mode = st. sidebar.radio(
     "Choose Quiz Mode:",
     ["Without Timer (Practice Mode)", "With Timer (Exam Mode)"],
     disabled=st.session_state.quiz_started
